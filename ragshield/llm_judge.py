@@ -48,7 +48,13 @@ class JudgeResult:
     reasoning: str
 
 
-def _get_client() -> Groq:
+def get_client() -> Groq:
+    """
+    Shared Groq client accessor. Public (not prefixed with _) because
+    generate_answer.py reuses this exact function rather than constructing
+    its own client — same fix in spirit as firewall.bind_embedder() avoiding
+    a duplicate SentenceTransformer load.
+    """
     global _client
     if _client is None:
         if not config.GROQ_API_KEY:
@@ -73,7 +79,7 @@ def judge(chunk_text: str, user_query: str) -> JudgeResult:
     prompt = _JUDGE_PROMPT_TEMPLATE.format(chunk_text=chunk_text, user_query=user_query)
 
     try:
-        response = _get_client().chat.completions.create(
+        response = get_client().chat.completions.create(
             model=config.GROQ_JUDGE_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
