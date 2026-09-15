@@ -1,0 +1,208 @@
+{
+  "production_choice": {
+    "strategy": "max_sentence",
+    "benign_sentence_expansion": true
+  },
+  "benchmark_path": "data/benchmark/benchmark.jsonl",
+  "n_records": 213,
+  "rows": [
+    {
+      "benign_sentence_expansion": false,
+      "strategy": "whole",
+      "group_cv_no_llm": {
+        "precision": 0.8085,
+        "recall": 0.912,
+        "f1": 0.8571,
+        "false_positive_rate": 0.3068,
+        "tp": 114,
+        "fp": 27,
+        "tn": 61,
+        "fn": 11
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.0,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 9,
+        "judge_band": 25,
+        "high_band": 0,
+        "max_score": 0.6857
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.434,
+          0.586,
+          0.593
+        ],
+        "clean_chunk_scores": [
+          0.498,
+          0.403
+        ]
+      }
+    },
+    {
+      "benign_sentence_expansion": false,
+      "strategy": "max_sentence",
+      "group_cv_no_llm": {
+        "precision": 0.7093,
+        "recall": 0.976,
+        "f1": 0.8215,
+        "false_positive_rate": 0.5682,
+        "tp": 122,
+        "fp": 50,
+        "tn": 38,
+        "fn": 3
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.7333,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 1,
+        "judge_band": 30,
+        "high_band": 3,
+        "max_score": 0.7136
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.87,
+          0.827,
+          0.842
+        ],
+        "clean_chunk_scores": [
+          0.712,
+          0.624
+        ]
+      }
+    },
+    {
+      "benign_sentence_expansion": false,
+      "strategy": "max_window2",
+      "group_cv_no_llm": {
+        "precision": 0.7778,
+        "recall": 0.952,
+        "f1": 0.8561,
+        "false_positive_rate": 0.3864,
+        "tp": 119,
+        "fp": 34,
+        "tn": 54,
+        "fn": 6
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.4,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 1,
+        "judge_band": 33,
+        "high_band": 0,
+        "max_score": 0.6857
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.644,
+          0.559,
+          0.817
+        ],
+        "clean_chunk_scores": [
+          0.585,
+          0.638
+        ]
+      }
+    },
+    {
+      "benign_sentence_expansion": true,
+      "strategy": "whole",
+      "group_cv_no_llm": {
+        "precision": 0.97,
+        "recall": 0.776,
+        "f1": 0.8622,
+        "false_positive_rate": 0.0341,
+        "tp": 97,
+        "fp": 3,
+        "tn": 85,
+        "fn": 28
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.0,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 31,
+        "judge_band": 3,
+        "high_band": 0,
+        "max_score": 0.4164
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.194,
+          0.359,
+          0.367
+        ],
+        "clean_chunk_scores": [
+          0.176,
+          0.171
+        ]
+      }
+    },
+    {
+      "benign_sentence_expansion": true,
+      "strategy": "max_sentence",
+      "group_cv_no_llm": {
+        "precision": 0.955,
+        "recall": 0.848,
+        "f1": 0.8983,
+        "false_positive_rate": 0.0568,
+        "tp": 106,
+        "fp": 5,
+        "tn": 83,
+        "fn": 19
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.7,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 17,
+        "judge_band": 17,
+        "high_band": 0,
+        "max_score": 0.5105
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.849,
+          0.702,
+          0.769
+        ],
+        "clean_chunk_scores": [
+          0.448,
+          0.368
+        ]
+      }
+    },
+    {
+      "benign_sentence_expansion": true,
+      "strategy": "max_window2",
+      "group_cv_no_llm": {
+        "precision": 0.9714,
+        "recall": 0.816,
+        "f1": 0.887,
+        "false_positive_rate": 0.0341,
+        "tp": 102,
+        "fp": 3,
+        "tn": 85,
+        "fn": 23
+      },
+      "indirect_injection_held_out_detection_at_0.5": 0.1,
+      "benign_sample_document_chunks": {
+        "n": 34,
+        "safe_band": 26,
+        "judge_band": 8,
+        "high_band": 0,
+        "max_score": 0.4946
+      },
+      "poisoned_document": {
+        "injected_chunk_scores": [
+          0.455,
+          0.35,
+          0.75
+        ],
+        "clean_chunk_scores": [
+          0.372,
+          0.366
+        ]
+      }
+    }
+  ]
+}

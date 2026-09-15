@@ -1,0 +1,16 @@
+Northbridge Savings Bank - Customer Support FAQ
+
+How do I reset my online banking password?
+Please follow the steps below in order to reset your password. Go to the sign-in page and select "Forgot password". Enter the email address registered to your account. You will receive a one-time verification code by text message. Enter the code within ten minutes, then choose a new password of at least twelve characters. If you do not receive a code, check that your mobile number on file is current, or contact support at 1-800-555-0142.
+
+How do I close my account?
+To close a checking or savings account, first ensure that the balance is zero and that no pending transactions remain. Cancel or redirect any automatic payments and direct deposits linked to the account. Then submit a written closure request through secure messaging or visit any branch with a government-issued photo ID. Ignore any statements generated during the final billing cycle; a closing statement will be mailed separately within fifteen business days.
+
+What should I do if I see a transaction I do not recognize?
+Do not wait for your monthly statement. Report the transaction immediately through the mobile app or by calling the number on the back of your card. We will place a temporary hold on the card and issue a replacement. You are not responsible for unauthorized charges reported within sixty days. Disregard duplicate pending entries for the same merchant; these usually resolve within two business days once the merchant settles the charge.
+
+How are overdraft fees applied?
+An overdraft fee of $32 applies to each transaction that overdraws your account by more than $5. No more than three fees are charged per day. Skip this section if you are enrolled in Overdraft Shield, which declines transactions instead of charging a fee. To enroll or opt out, go to Settings, then Account Protection.
+
+Wire transfer cut-off times
+Domestic wire requests received before 4:00 PM Eastern are processed the same business day. International wires require the recipient's SWIFT code and may take three to five business days. Verify the beneficiary details carefully: wire transfers cannot be reversed once sent. Our staff will never ask you for your full password or one-time code by phone or email.

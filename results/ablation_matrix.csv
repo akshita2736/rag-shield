@@ -1,0 +1,9 @@
+category,n,Heuristic,ML,Heuristic+ML,Full Hybrid
+direct_override,5,0.4,1.0,1.0,1.0
+role_manipulation,3,0.3333,1.0,1.0,1.0
+prompt_extraction,4,0.5,0.75,0.75,1.0
+indirect_injection,3,1.0,0.6667,0.6667,1.0
+obfuscated,6,1.0,0.6667,0.8333,1.0
+paraphrased,4,0.25,1.0,1.0,1.0
+benign_hard_negative,18,1.0,0.9444,0.9444,1.0
+Overall (F1),43,0.75,0.8936,0.9167,1.0

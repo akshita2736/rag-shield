@@ -1,0 +1,16 @@
+{
+  "trained_at_utc": "2026-09-15T18:48:23+00:00",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "scoring_strategy": "max_sentence",
+  "python_version": "3.12.2",
+  "sentence_transformers_version": "5.7.0",
+  "torch_version": "2.14.0",
+  "numpy_version": "2.5.3",
+  "n_records": 213,
+  "n_training_units": 417,
+  "n_positive_records": 125,
+  "sklearn_version": "1.9.1",
+  "benchmark_path": "data/benchmark/benchmark.jsonl",
+  "benchmark_sha256": "fac22090685a6b8be15073a154ea22a6f84895cc7c8add4bd2860d1228c4b0df"
+}

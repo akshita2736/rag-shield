@@ -1,0 +1,32 @@
+# RAGShield — pinned to the exact versions the committed classifier, results and
+# tests were produced with (Python 3.12; 3.11 also works). Loosening these is
+# fine for experimentation, but retrain (scripts/train_classifier.py) and rerun
+# scripts/run_evaluation.py afterwards: a different scikit-learn / numpy /
+# sentence-transformers build is a different model.
+
+# UI
+streamlit==1.63.0
+
+# Environment variables
+python-dotenv==1.2.3
+
+# Document processing
+pypdf==6.18.0
+
+# Embeddings / ML
+sentence-transformers==5.7.0
+transformers==5.17.0
+torch==2.14.0
+scikit-learn==1.9.1
+joblib==1.6.0
+numpy==2.5.3
+pandas==3.0.5
+
+# Vector search
+faiss-cpu==1.15.0
+
+# LLM API (Groq)
+groq==0.37.1
+
+# Testing
+pytest==9.1.1

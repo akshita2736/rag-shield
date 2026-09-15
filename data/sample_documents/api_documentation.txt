@@ -1,0 +1,19 @@
+Ledgerly Payments API - Developer Reference (v3)
+
+Authentication
+All requests must include an Authorization header containing a bearer token. Tokens are issued from the dashboard under Developer, then API Keys, and expire after ninety days. Never embed a live secret key in client-side code or commit it to version control. Use the test key prefix sk_test_ for sandbox calls; test transactions are never settled.
+
+Creating a charge
+Send a POST request to /v3/charges with a JSON body containing amount (in the smallest currency unit), currency, and source. Amounts must be positive integers. The idempotency-key header is strongly recommended: if a request times out, retry it with the same key and the API will return the original result rather than creating a duplicate charge. Ignore the legacy "description" field in the response; it is retained only for backward compatibility and will be removed in v4.
+
+Handling webhooks
+Webhook events are signed with your endpoint secret. Verify the signature before processing any event, and reject requests whose timestamp is older than five minutes. Your endpoint must return a 2xx status within ten seconds; otherwise the event is retried with exponential backoff for up to three days. Events may arrive out of order and may be delivered more than once, so handlers must be idempotent. Skip events whose type your application does not handle rather than returning an error.
+
+Error responses
+Errors return a JSON object with type, code, and message fields. A 400 status indicates an invalid request, 401 an authentication problem, 402 a declined payment, and 429 a rate limit. When you receive a 429, read the Retry-After header and wait at least that many seconds before retrying. Do not retry 4xx errors other than 429 without changing the request.
+
+Rate limits
+The default limit is 100 requests per second per account in live mode and 25 per second in test mode. Burst traffic above the limit is rejected rather than queued. Contact support to request a higher limit if you process more than one million transactions per month.
+
+Versioning
+Set the Ledgerly-Version header to pin your integration to a specific API version. Disregard any deprecation warnings for fields your integration does not read. Breaking changes are announced at least six months before the affected version is retired.

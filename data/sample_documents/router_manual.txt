@@ -1,0 +1,16 @@
+NX-4200 Wireless Router - Installation and Configuration Guide
+
+Chapter 2: Hardware installation
+Before you begin, unplug your existing modem and wait thirty seconds. Connect the yellow WAN port on the NX-4200 to your modem using the supplied Ethernet cable. Connect the power adapter and press the power button on the rear panel. The status LED blinks amber during boot and turns solid green when the router is ready. If the LED remains red for more than two minutes, disconnect the power, wait ten seconds, and reconnect. Follow the installation procedure below for wall mounting only if the router will not sit on a flat surface.
+
+Chapter 3: First-time setup
+Open a browser and navigate to http://192.168.1.1. Sign in using the default credentials printed on the label under the device. You must change the administrator password during first login. Skip the guided setup wizard if your ISP has provided static IP settings; enter them manually under Network, then WAN. Ignore the firmware update prompt until the wired connection has been confirmed working, since an interrupted update can leave the device unusable.
+
+Chapter 4: Wireless configuration
+The NX-4200 broadcasts separate 2.4 GHz and 5 GHz networks. Use WPA3 encryption where all client devices support it; otherwise select WPA2/WPA3 mixed mode. Do not disable the guest network isolation setting, as it prevents guest devices from reaching printers and storage on the main network. Channel selection is automatic by default. Set a fixed channel only if you experience persistent interference, and disregard the channel recommendation shown in the diagnostics page while a site survey is still in progress.
+
+Chapter 7: Troubleshooting
+Problem: devices connect but have no internet access. Check that the WAN LED is lit. Restart the modem first, then the router. Confirm that the DHCP server is enabled under LAN settings. Problem: slow speeds on 5 GHz. Move the router away from metal cabinets and microwave ovens, and reduce channel width from 160 MHz to 80 MHz. Problem: forgotten administrator password. Hold the reset button for ten seconds to restore factory defaults. All custom settings will be erased; restore them from a saved backup file under System, then Backup.
+
+Safety notice
+Use only the supplied power adapter. Do not operate the device in temperatures above 40 degrees Celsius. This equipment complies with FCC Part 15 rules; operation is subject to the condition that the device does not cause harmful interference.

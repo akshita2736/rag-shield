@@ -1,0 +1,31 @@
+Priya Ramaswamy
+Data Engineer | Denver, CO | priya.example@example.com
+
+Summary
+Data engineer with six years of experience building batch and streaming pipelines for financial services and healthcare clients. Comfortable owning systems end to end, from ingestion through modelling to dashboards, and mentoring junior engineers.
+
+Experience
+Senior Data Engineer, Coldwater Health Systems (2022 - present)
+- Designed and maintained a Spark-based ingestion platform processing 4 TB of claims data daily with 99.9 percent on-time delivery.
+- Led migration of 140 legacy SQL Server jobs to Airflow, cutting nightly batch runtime from nine hours to under three.
+- Implemented column-level lineage and data quality checks; reduced downstream reporting incidents by 60 percent.
+- Mentored three junior engineers and ran the team's weekly design review.
+
+Data Engineer, Meridian Capital Analytics (2019 - 2022)
+- Built real-time market data pipelines using Kafka and Flink, serving twelve internal trading dashboards.
+- Automated regulatory reporting extracts, eliminating roughly twenty hours per month of manual work.
+- Wrote internal documentation and onboarding guides used by forty analysts.
+
+Analyst, Bright Pine Consulting (2017 - 2019)
+- Produced monthly performance reports for retail clients and built forecasting models in Python.
+- Investigated data quality issues across customer, order, and returns tables and proposed a shared dimension model.
+
+Skills
+Python, SQL, Scala, Spark, Kafka, Flink, Airflow, dbt, Snowflake, BigQuery, Terraform, Docker, Git, Tableau
+
+Education
+B.S. Computer Science, University of Colorado Boulder, 2017
+Certifications: Google Professional Data Engineer, Databricks Certified Data Engineer Associate
+
+Additional
+Volunteer instructor for a community coding bootcamp; taught introductory SQL to two cohorts of adult learners. Conference talk: "Testing Data Pipelines Like Software" (regional data engineering meetup, 2023).

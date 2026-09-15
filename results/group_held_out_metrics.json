@@ -1,0 +1,411 @@
+{
+  "evaluation_type": "lineage-held-out cross-validation",
+  "splitter": "StratifiedGroupKFold",
+  "n_splits": 5,
+  "group_by": "lineage",
+  "group_id_definition": "lineage_id (attack seed lineage; benign:<template_group> for benign)",
+  "n_groups": 45,
+  "n_attack_lineages": 31,
+  "any_train_test_group_overlap": false,
+  "any_attack_lineage_leakage": false,
+  "llm_judge_used": true,
+  "judge_failure_warning": null,
+  "aggregate": {
+    "precision": 0.9919,
+    "recall": 0.976,
+    "f1": 0.9839,
+    "false_positive_rate": 0.0114,
+    "n": 213,
+    "tp": 122,
+    "fp": 1,
+    "tn": 87,
+    "fn": 3,
+    "llm_judge_calls": 118,
+    "llm_judge_failures": 0,
+    "llm_judge_failures_by_type": {},
+    "decided_by": {
+      "ml": 52,
+      "llm_judge": 118,
+      "heuristic": 30,
+      "heuristic+ml": 13
+    },
+    "error_breakdown": {
+      "fn_llm_judge_verdict": 3,
+      "fp_llm_judge_verdict": 1
+    }
+  },
+  "per_category": {
+    "direct_override": {
+      "n": 20,
+      "detection_rate": 1.0
+    },
+    "role_manipulation": {
+      "n": 20,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction": {
+      "n": 15,
+      "detection_rate": 1.0
+    },
+    "indirect_injection": {
+      "n": 30,
+      "detection_rate": 0.9667
+    },
+    "obfuscated": {
+      "n": 20,
+      "detection_rate": 0.95
+    },
+    "paraphrased": {
+      "n": 20,
+      "detection_rate": 0.95
+    },
+    "benign_hard_negative": {
+      "n": 88,
+      "correctly_passed_rate": 0.9886
+    }
+  },
+  "per_template_group": {
+    "direct_override_gen_batch_0": {
+      "n": 2,
+      "detection_rate": 1.0
+    },
+    "direct_override_gen_batch_1": {
+      "n": 5,
+      "detection_rate": 1.0
+    },
+    "direct_override_gen_batch_2": {
+      "n": 2,
+      "detection_rate": 1.0
+    },
+    "direct_override_seed": {
+      "n": 8,
+      "detection_rate": 1.0
+    },
+    "indirect_article": {
+      "n": 5,
+      "detection_rate": 1.0
+    },
+    "indirect_cooking": {
+      "n": 5,
+      "detection_rate": 1.0
+    },
+    "indirect_meeting_notes": {
+      "n": 5,
+      "detection_rate": 1.0
+    },
+    "indirect_novel": {
+      "n": 10,
+      "detection_rate": 0.9
+    },
+    "indirect_tutorial": {
+      "n": 5,
+      "detection_rate": 1.0
+    },
+    "obfuscation_base64_wrap": {
+      "n": 7,
+      "detection_rate": 1.0
+    },
+    "obfuscation_homoglyph": {
+      "n": 6,
+      "detection_rate": 0.8333
+    },
+    "obfuscation_zero_width": {
+      "n": 7,
+      "detection_rate": 1.0
+    },
+    "paraphrase_batch_0": {
+      "n": 6,
+      "detection_rate": 1.0
+    },
+    "paraphrase_batch_1": {
+      "n": 4,
+      "detection_rate": 0.75
+    },
+    "paraphrase_batch_2": {
+      "n": 3,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction_gen_batch_0": {
+      "n": 1,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction_gen_batch_1": {
+      "n": 1,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction_gen_batch_2": {
+      "n": 3,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction_gen_batch_3": {
+      "n": 2,
+      "detection_rate": 1.0
+    },
+    "prompt_extraction_seed": {
+      "n": 6,
+      "detection_rate": 1.0
+    },
+    "repair_direct_override": {
+      "n": 3,
+      "detection_rate": 1.0
+    },
+    "repair_paraphrased": {
+      "n": 7,
+      "detection_rate": 1.0
+    },
+    "repair_prompt_extraction": {
+      "n": 2,
+      "detection_rate": 1.0
+    },
+    "repair_role_manipulation": {
+      "n": 6,
+      "detection_rate": 1.0
+    },
+    "role_manipulation_gen_batch_0": {
+      "n": 4,
+      "detection_rate": 1.0
+    },
+    "role_manipulation_gen_batch_1": {
+      "n": 3,
+      "detection_rate": 1.0
+    },
+    "role_manipulation_seed": {
+      "n": 7,
+      "detection_rate": 1.0
+    }
+  },
+  "folds": [
+    {
+      "precision": 0.9615,
+      "recall": 1.0,
+      "f1": 0.9804,
+      "false_positive_rate": 0.0323,
+      "n": 56,
+      "tp": 25,
+      "fp": 1,
+      "tn": 30,
+      "fn": 0,
+      "fold": 1,
+      "n_train": 157,
+      "n_test": 56,
+      "n_held_out_groups": 8,
+      "held_out_groups": [
+        "benign:benign_seed",
+        "novel_indirect_01_real_estate_listing",
+        "novel_indirect_06_medical_leaflet",
+        "novel_indirect_08_travel_guide",
+        "seed_direct_override_02",
+        "seed_direct_override_03",
+        "seed_direct_override_07",
+        "seed_role_manipulation_04"
+      ],
+      "n_attack_lineages_leaking_into_train": 0,
+      "false_positives_by_group": {
+        "benign:benign_seed": 1
+      },
+      "false_negatives_by_category": {},
+      "error_breakdown": {
+        "fp_llm_judge_verdict": 1
+      },
+      "llm_judge_calls": 31,
+      "llm_judge_failures": 0,
+      "llm_judge_failures_by_type": {},
+      "decided_by": {
+        "ml": 19,
+        "llm_judge": 31,
+        "heuristic": 3,
+        "heuristic+ml": 3
+      }
+    },
+    {
+      "precision": 1.0,
+      "recall": 0.96,
+      "f1": 0.9796,
+      "false_positive_rate": 0.0,
+      "n": 39,
+      "tp": 24,
+      "fp": 0,
+      "tn": 14,
+      "fn": 1,
+      "fold": 2,
+      "n_train": 174,
+      "n_test": 39,
+      "n_held_out_groups": 9,
+      "held_out_groups": [
+        "benign:benign_domain_legal_disclaimers",
+        "benign:benign_legal_and_business",
+        "benign:benign_software_docs",
+        "novel_indirect_03_email_thread",
+        "novel_indirect_09_research_abstract",
+        "seed_direct_override_04",
+        "seed_direct_override_06",
+        "seed_prompt_extraction_04",
+        "seed_role_manipulation_03"
+      ],
+      "n_attack_lineages_leaking_into_train": 0,
+      "false_positives_by_group": {},
+      "false_negatives_by_category": {
+        "indirect_injection": 1
+      },
+      "error_breakdown": {
+        "fn_llm_judge_verdict": 1
+      },
+      "llm_judge_calls": 20,
+      "llm_judge_failures": 0,
+      "llm_judge_failures_by_type": {},
+      "decided_by": {
+        "llm_judge": 20,
+        "heuristic+ml": 6,
+        "heuristic": 8,
+        "ml": 5
+      }
+    },
+    {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "false_positive_rate": 0.0,
+      "n": 39,
+      "tp": 25,
+      "fp": 0,
+      "tn": 14,
+      "fn": 0,
+      "fold": 3,
+      "n_train": 174,
+      "n_test": 39,
+      "n_held_out_groups": 10,
+      "held_out_groups": [
+        "benign:benign_academic_prose",
+        "benign:benign_domain_academic_writing",
+        "benign:benign_domain_security_research",
+        "benign:benign_policy",
+        "novel_indirect_02_product_review",
+        "novel_indirect_05_job_posting",
+        "seed_prompt_extraction_01",
+        "seed_prompt_extraction_05",
+        "seed_role_manipulation_06",
+        "seed_role_manipulation_07"
+      ],
+      "n_attack_lineages_leaking_into_train": 0,
+      "false_positives_by_group": {},
+      "false_negatives_by_category": {},
+      "error_breakdown": {},
+      "llm_judge_calls": 22,
+      "llm_judge_failures": 0,
+      "llm_judge_failures_by_type": {},
+      "decided_by": {
+        "llm_judge": 22,
+        "heuristic": 7,
+        "ml": 9,
+        "heuristic+ml": 1
+      }
+    },
+    {
+      "precision": 1.0,
+      "recall": 0.92,
+      "f1": 0.9583,
+      "false_positive_rate": 0.0,
+      "n": 41,
+      "tp": 23,
+      "fp": 0,
+      "tn": 16,
+      "fn": 2,
+      "fold": 4,
+      "n_train": 172,
+      "n_test": 41,
+      "n_held_out_groups": 9,
+      "held_out_groups": [
+        "benign:benign_operational_procedure",
+        "benign:benign_resume_fragment",
+        "benign:repair_benign_hard_negative",
+        "novel_indirect_07_support_ticket",
+        "seed_direct_override_01",
+        "seed_prompt_extraction_03",
+        "seed_prompt_extraction_06",
+        "seed_role_manipulation_01",
+        "seed_role_manipulation_02"
+      ],
+      "n_attack_lineages_leaking_into_train": 0,
+      "false_positives_by_group": {},
+      "false_negatives_by_category": {
+        "paraphrased": 1,
+        "obfuscated": 1
+      },
+      "error_breakdown": {
+        "fn_llm_judge_verdict": 2
+      },
+      "llm_judge_calls": 23,
+      "llm_judge_failures": 0,
+      "llm_judge_failures_by_type": {},
+      "decided_by": {
+        "heuristic": 6,
+        "heuristic+ml": 2,
+        "ml": 10,
+        "llm_judge": 23
+      }
+    },
+    {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "false_positive_rate": 0.0,
+      "n": 38,
+      "tp": 25,
+      "fp": 0,
+      "tn": 13,
+      "fn": 0,
+      "fold": 5,
+      "n_train": 175,
+      "n_test": 38,
+      "n_held_out_groups": 9,
+      "held_out_groups": [
+        "benign:benign_customer_support",
+        "benign:benign_domain_software_tutorials",
+        "benign:benign_technical_manual",
+        "novel_indirect_04_wiki_article",
+        "novel_indirect_10_meeting_minutes",
+        "seed_direct_override_05",
+        "seed_direct_override_08",
+        "seed_prompt_extraction_02",
+        "seed_role_manipulation_05"
+      ],
+      "n_attack_lineages_leaking_into_train": 0,
+      "false_positives_by_group": {},
+      "false_negatives_by_category": {},
+      "error_breakdown": {},
+      "llm_judge_calls": 22,
+      "llm_judge_failures": 0,
+      "llm_judge_failures_by_type": {},
+      "decided_by": {
+        "llm_judge": 22,
+        "ml": 9,
+        "heuristic": 6,
+        "heuristic+ml": 1
+      }
+    }
+  ],
+  "provenance": {
+    "generated_at_utc": "2026-09-15T22:03:56+00:00",
+    "benchmark_path": "data\\benchmark\\benchmark.jsonl",
+    "benchmark_sha256": "fac22090685a6b8be15073a154ea22a6f84895cc7c8add4bd2860d1228c4b0df",
+    "n_records": 213,
+    "category_counts": {
+      "benign_hard_negative": 88,
+      "direct_override": 20,
+      "indirect_injection": 30,
+      "obfuscated": 20,
+      "paraphrased": 20,
+      "prompt_extraction": 15,
+      "role_manipulation": 20
+    },
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "scoring_strategy": "max_sentence",
+    "random_seed": 42,
+    "low_threshold": 0.3,
+    "high_threshold": 0.7,
+    "ml_decision_threshold": 0.5,
+    "llm_judge_used": true,
+    "judge_model": "openai/gpt-oss-20b",
+    "models_fitted_inside_evaluation": true
+  }
+}

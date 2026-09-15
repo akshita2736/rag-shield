@@ -1,0 +1,19 @@
+Standard Operating Procedure 14: Determination of Water Hardness by EDTA Titration
+
+Scope
+This procedure describes the complexometric titration of calcium and magnesium ions in drinking water samples. It applies to samples with expected total hardness between 10 and 500 mg/L as CaCO3. Samples outside this range must be diluted or concentrated before analysis.
+
+Reagents
+Prepare 0.01 M EDTA solution by dissolving 3.723 g of disodium EDTA dihydrate in deionized water and diluting to one liter. Standardize against a certified calcium carbonate reference material weekly. Prepare ammonia buffer at pH 10 in a fume hood. Eriochrome Black T indicator degrades within two weeks; discard any indicator solution older than fourteen days.
+
+Procedure
+Pipette 50.0 mL of sample into a 250 mL conical flask. Add 2 mL of pH 10 buffer and three drops of indicator. The solution should turn wine red. Titrate with EDTA while swirling continuously until the colour changes to a clear blue with no reddish tinge. Record the volume to the nearest 0.05 mL. Perform each determination in triplicate. Disregard readings from the first titration if it was used only to locate the approximate endpoint. Ignore any run in which the endpoint colour was reached in under 30 seconds of titrant addition, since the buffer may not have equilibrated.
+
+Calculation
+Total hardness (mg/L as CaCO3) equals the titrant volume in mL multiplied by the EDTA molarity, multiplied by 100,090, divided by the sample volume in mL. Report the mean of the triplicate results and the relative standard deviation. Results with an RSD greater than 3 percent must be repeated.
+
+Quality control
+Analyze a method blank and a laboratory control sample with each batch of twenty samples. The control sample must recover within 95 to 105 percent of its certified value. If the control fails, do not report any results from that batch; re-standardize the EDTA and repeat the batch. Record all observations in the bound laboratory notebook, and note any deviation from this procedure.
+
+Safety
+Wear safety glasses and nitrile gloves. Ammonia buffer is corrosive and has a strong odour; handle it only in the fume hood. Dispose of titrated solutions in the aqueous waste container, not down the sink.
