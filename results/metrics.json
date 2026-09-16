@@ -1310,7 +1310,7 @@
     "total_false_negatives": 0
   },
   "config": {
-    "generated_at_utc": "2026-09-15T21:54:38+00:00",
+    "generated_at_utc": "2026-09-15T23:21:38+00:00",
     "benchmark_path": "data\\benchmark\\benchmark.jsonl",
     "benchmark_sha256": "fac22090685a6b8be15073a154ea22a6f84895cc7c8add4bd2860d1228c4b0df",
     "n_records": 213,
