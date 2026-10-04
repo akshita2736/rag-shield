@@ -346,7 +346,7 @@ with tab_eval:
             ablation_df = pd.read_csv(config.ABLATION_MATRIX_PATH)
             st.dataframe(ablation_df, width="stretch", hide_index=True)
             chart_df = ablation_df[ablation_df["category"] != "Overall (F1)"].set_index("category")
-            st.bar_chart(chart_df[[c for c in chart_df.columns if c not in ("category", "n")]])
+            st.bar_chart(chart_df[[c for c in chart_df.columns if c not in ("category", "n")]], stack=False)
         st.divider()
 
         # --- Category-held-out ---
@@ -376,7 +376,7 @@ with tab_eval:
             )
             cat_df = pd.DataFrame(rows)
             st.dataframe(cat_df, width="stretch", hide_index=True)
-            st.bar_chart(cat_df.set_index("category")[["ML-only detection", "Heuristic+ML detection"]])
+            st.bar_chart(cat_df.set_index("category")[["ML-only detection", "Heuristic+ML detection"]], stack=False)
         st.divider()
 
         # --- Threshold sensitivity ---

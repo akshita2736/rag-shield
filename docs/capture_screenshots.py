@@ -35,6 +35,10 @@ def wait_idle(page, secs=2.5):
 
 def capture(page, name):
     """Streamlit scrolls inside an inner container, so size the viewport to the content."""
+    page.evaluate("() => document.activeElement && document.activeElement.blur()")
+    page.mouse.move(1, 1)
+    page.keyboard.press("Escape")
+    time.sleep(0.8)
     page.set_viewport_size({"width": 1400, "height": 1000})
     time.sleep(0.8)
     h = int(min(max(page.evaluate(JS_SCROLL_H), 1000), 9000)) + 60

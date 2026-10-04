@@ -33,6 +33,13 @@ group = json.loads((ROOT / "results/group_held_out_metrics.json").read_text())
 tg = json.loads((ROOT / "results/group_held_out_metrics_template_group.json").read_text())["aggregate"]
 seg = json.loads((ROOT / "results/segmentation_experiment.json").read_text())
 ablation = (ROOT / "results/ablation_matrix.csv").read_text().strip().splitlines()
+# Layers 1+2 only (no judge) lineage-CV numbers come from the segmentation experiment; live-judge numbers from group_held_out_metrics.json
+NOJ = next(r for r in seg["rows"] if r["benign_sentence_expansion"] and r["strategy"] == "max_sentence")["group_cv_no_llm"]
+LIVE = bool(group.get("llm_judge_used"))
+JM = metrics["config"].get("judge_model", "the Groq judge")
+JC_CV = group["aggregate"].get("llm_judge_calls", 0)
+JC_RS = metrics["judge_accounting"].get("llm_judge_calls", 0)
+JF = group["aggregate"].get("llm_judge_failures", 0) + metrics["judge_accounting"].get("llm_judge_failures", 0)
 agg = group["aggregate"]
 eb = agg["error_breakdown"]
 
@@ -105,18 +112,16 @@ story = []
 # ------------------------------------------------------------------ title
 story += [Spacer(1, 1.4 * inch), P("RAGShield", TITLE), P("Reliability Framework for RAG Systems", SUB),
           P("Debugging, audit and finalisation report (two audit passes)", SUB), Spacer(1, 0.3 * inch),
-          P(f"Prepared {datetime.date.today():%d %B %Y} · project directory <font face='Courier'>~/Claude/rag-shield</font>", SUB),
+          P(f"Prepared {datetime.date.today():%d %B %Y}", SUB),
           Spacer(1, 0.5 * inch)]
-story.append(table([["Headline (group-held-out, Layers 1+2)", "Before (v1, template-group split)", "After (v3, lineage split)"],
-                    ["Precision", "0.767", f"{agg['precision']:.3f}"], ["Recall", "1.000", f"{agg['recall']:.3f}"],
-                    ["F1", "0.868", f"{agg['f1']:.3f}"], ["False positive rate", "0.875", f"{agg['false_positive_rate']:.3f}"],
-                    ["Attack lineages leaking into training", "present", "0"],
-                    ["Attacks passing silently (no Layer 3 review) in CV", "n/a", f"{eb.get('fn_layer_2_silent_pass', 0)}"],
-                    ["Legitimate real-document chunks quarantined without review", "19 / 34 (56%)", "0 / 34"]],
-                   widths=[W * 0.5, W * 0.25, W * 0.25]))
-story.append(P("'Before' is the shipped repository evaluated with the same script and no LLM judge; 'After' is the committed state after two audits, "
-               "evaluated with attack-lineage grouping (stricter than the original split). Every number in this document was produced by running the code. "
-               "Section 13 covers the second audit and the GO/NO-GO verdict.", CAP))
+story.append(table([["Headline (group-held-out)", "Before: v1, template-group split, Layers 1+2", "After: v3, lineage split, Layers 1+2 (no judge)", "After: v3, lineage split, full hybrid (live judge)"],
+                    ["Precision", "0.767", f"{NOJ['precision']:.3f}", f"{agg['precision']:.3f}"], ["Recall", "1.000", f"{NOJ['recall']:.3f}", f"{agg['recall']:.3f}"],
+                    ["F1", "0.868", f"{NOJ['f1']:.3f}", f"{agg['f1']:.3f}"], ["False positive rate", "0.875", f"{NOJ['false_positive_rate']:.3f}", f"{agg['false_positive_rate']:.3f}"],
+                    ["Attack lineages leaking into training", "present", "0", "0"],
+                    ["Legitimate real-document chunks quarantined without review", "19 / 34 (56%)", "0 / 34", "0 / 34"]],
+                   widths=[W * 0.31, W * 0.23, W * 0.23, W * 0.23]))
+story.append(P("'Before' is the shipped repository evaluated with the same script and no LLM judge. The two 'After' columns use the same lineage-grouped folds: Layers 1+2 alone (0.5 cutoff in place of the judge) and the full hybrid with the live Groq judge "
+               f"({JM}; {JC_CV} judge calls in cross-validation, 0 failures). Only like-for-like columns should be compared. Section 13 covers the second audit.", CAP))
 story.append(PageBreak())
 
 # ------------------------------------------------------------------ 1
@@ -136,7 +141,7 @@ P("A second audit (section 13) then traced attack lineage through the benchmark:
   "9 of those 10 to the judge, so no attack in leakage-free cross-validation passes without Layer 3 review. The Groq request configuration was corrected against current documentation and "
   "all dependencies were pinned to the versions the model was trained with."),
 P("Verification: 87 unit tests and 2 real-document tests pass; every evaluation script was rerun on the final code and model; the Streamlit app was driven end to end in a headless browser. "
-  "Live Groq calls could not be exercised (no API key available), so judge accuracy remains to be confirmed by the owner with the two commands in section 10."),
+  f"Layer 3 was exercised live on Groq ({JM}): {JC_CV} judge calls in lineage-grouped cross-validation and {JC_RS} on the random split, with {JF} failures."),
 ]
 
 # ------------------------------------------------------------------ 2
@@ -213,7 +218,7 @@ story.append(table(changes, widths=[W * 0.2, W * 0.45, W * 0.35]))
 
 # ------------------------------------------------------------------ 6 results
 story += [PageBreak(), P("6. Results (all produced by the committed code on the committed benchmark v3)", H1),
-P("No Groq key was available locally, so every committed run uses Layers 1+2 with the judge replaced by the 0.5 ablation cutoff and records llm_judge_used: false. "
+P(f"The committed evaluation runs used the live Groq judge ({JM}); results record llm_judge_used: {str(LIVE).lower()} and zero judge failures. Layers 1+2-only figures (judge replaced by a 0.5 cutoff) are labelled as such and come from the segmentation experiment and the ablation conditions. "
   "The results files embed the benchmark's SHA-256; the app warns if it no longer matches."),
 P(f"6.1 Group-held-out cross-validation, grouped by {group.get('group_by')} (headline)", H2),
 P("Groups are attack lineages (all variants of one seed payload) plus benign document styles; a per-fold assertion guarantees no attack lineage is on both sides. Section 13.1 compares this with the older template-group split.", CAP)]
@@ -223,19 +228,19 @@ for f in group["folds"]:
                  f"{f['precision']:.3f}", f"{f['recall']:.3f}", f"{f['f1']:.3f}", f"{f['false_positive_rate']:.3f}"])
 rows.append(["Aggregate", "", agg["n"], group["n_groups"], agg["tp"], agg["fp"], agg["tn"], agg["fn"], f"{agg['precision']:.3f}", f"{agg['recall']:.3f}", f"{agg['f1']:.3f}", f"{agg['false_positive_rate']:.3f}"])
 story.append(table(rows))
-story.append(P(f"Error sources: {eb.get('fn_ablation_cutoff_would_reach_judge', 0)} of the {agg['fn']} misses fell in the review band and would reach Layer 3 in production; "
-               f"{eb.get('fn_layer_2_silent_pass', 0)} passed silently. All {agg['fp']} false positives were in the review band.", CAP))
+story.append(P(f"Error sources (live judge): {eb.get('fn_llm_judge_verdict', 0)} of the {agg['fn']} misses were judge verdicts (the chunk reached Layer 3 and was judged safe); "
+               f"{eb.get('fn_layer_2_silent_pass', 0)} passed silently without review. {eb.get('fp_llm_judge_verdict', 0)} of the {agg['fp']} false positives was a judge verdict.", CAP))
 pc = group["per_category"]
 story.append(table([["Category", "n", "Rate", "Meaning"]] + [[c, v["n"], f"{v.get('detection_rate', v.get('correctly_passed_rate')):.3f}", "detected" if "detection_rate" in v else "correctly passed"] for c, v in pc.items()],
                    widths=[W * 0.35, W * 0.15, W * 0.2, W * 0.3]))
 ptg = group.get("per_template_group", {})
-story.append(table([["Attack template group", "n", "Detection (Layers 1+2 at 0.5)"]] + [[k, v["n"], f"{v['detection_rate']:.2f}"] for k, v in ptg.items()], widths=[W * 0.5, W * 0.2, W * 0.3]))
+story.append(table([["Attack template group", "n", "Detection (" + ("full hybrid, live judge" if LIVE else "Layers 1+2 at 0.5") + ")"]] + [[k, v["n"], f"{v['detection_rate']:.2f}"] for k, v in ptg.items()], widths=[W * 0.5, W * 0.2, W * 0.3]))
 story.append(P("Detection by template group under lineage grouping. indirect_novel (ten handwritten payloads sharing no wording with any seed) is the honest unseen-payload number: "
-               "the classifier detects 1 of 10; the ai_addressed_instruction rule escalates 9 of 10 to Layer 3.", CAP))
+               "the classifier alone detects 1 of 10; with the ai_addressed_instruction rule escalating to Layer 3, the full hybrid detects 9 of 10 (live judge).", CAP))
 
 story.append(P("6.2 Ablation on the random 80/20 split", H2))
 story.append(table([c.split(",") for c in ablation]))
-story.append(P("Detection rate per attack category and correctly-passed rate for benign_hard_negative. Full Hybrid equals Heuristic+ML here because no judge was available. "
+story.append(P("Detection rate per attack category and correctly-passed rate for benign_hard_negative. Full Hybrid uses the live judge (20 calls, 0 failures), which is why it exceeds Heuristic+ML; the other three columns need no judge. "
                "The random split is optimistic by construction and is kept only to give the ablation one common test set.", CAP))
 
 story.append(P("6.3 Category-held-out (unseen attack family)", H2))
@@ -266,7 +271,7 @@ sec = [["#", "Requirement", "Status", "How it is enforced / verified"],
 ["4–5", "Sanitised context contains only approved chunks; blocked chunks never reach generation", "Done", "sanitised_context() joins final_included only; test asserts the attack string is absent from the messages sent"],
 ["6–8", "Judge failures, malformed responses and API errors fail closed", "Done", "INJECTION with error class for API exceptions, None content, unparseable JSON, invalid verdict; real SDK connection failure exercised offline"],
 ["9", "Critical heuristic matches hard-block", "Done", "Routing row 1; zero critical fires on 88 benign records"],
-["10–13", "Direct, indirect, role-manipulation and prompt-extraction attacks detected", "Verified without judge; honest gaps stated", "Lineage CV detection: direct 1.00, seed-derived indirect 1.00, role 0.95, extraction 0.93; novel indirect payloads 0.10 by ML, 9/10 escalated by Layer 1"],
+["10–13", "Direct, indirect, role-manipulation and prompt-extraction attacks detected", "Verified incl. live judge; honest gaps stated", "Lineage CV detection: direct 1.00, seed-derived indirect 1.00, role 0.95, extraction 0.93; novel indirect payloads 0.10 by ML, 9/10 escalated by Layer 1"],
 ["14–15", "Obfuscation and paraphrase tested", "Verified, limitation noted", "All 20 obfuscated records leave Layer 1 evidence; classifier alone 0.40–0.55; paraphrased 0.90"],
 ["16", "Legitimate instructional content not automatically blocked", "Done", "High ML score alone never blocks; 0 of 34 real benign chunks hard-blocked"],
 ["17", "User query and document content clearly separated", "Done", "Separate tagged blocks in both prompts"],
@@ -275,11 +280,11 @@ story.append(table(sec, widths=[W * 0.06, W * 0.34, W * 0.16, W * 0.44]))
 
 # ------------------------------------------------------------------ 8 streamlit
 story += [PageBreak(), P("8. Streamlit application walkthrough", H1),
-P("Captured from the running app in a headless browser after all fixes (docs/capture_screenshots.py). They show exactly what a user sees without the Groq key: Layer 3 is unavailable, so the app says so and fails closed.")]
-story += figure(SHOTS / "01_home.png", "Figure 1. Tab 1 on launch. The banner states that Layer 3 is unavailable and what that means (fail closed). Upload accepts .txt/.pdf; a sample-document loader is provided for demos.", 1.0)
+P("Captured from the running app in a headless browser after all fixes (docs/capture_screenshots.py). They show what a user sees with the Groq key configured and Layer 3 active.")]
+story += figure(SHOTS / "01_home.png", "Figure 1. Tab 1 on launch with Layer 3 enabled. Upload accepts .txt/.pdf; a sample-document loader is provided for demos.", 1.0)
 story += figure(SHOTS / "02_loaded.png", "Figure 2. After 'Load sample documents': 39 chunks from 7 fictional documents indexed in FAISS (six benign, one poisoned FAQ).", 1.0)
 story += figure(SHOTS / "03_poisoned_query.png", "Figure 3. Query that retrieves the poisoned FAQ. Two chunks are blocked by Layer 1 (critical rules), one by Layer 2 corroborated by a Layer 1 rule with no LLM call; each card shows band, deciding layer, evidence and highest-scoring sentences. The tail fragment of an injected sentence cut at a chunk boundary scores 0.37 and is escalated (it passed at 0.30 under the v2 model): the documented chunking limitation, now a near-miss rather than a miss.")
-story += figure(SHOTS / "04_benign_query.png", "Figure 4. Benign banking query. Support-article chunks pass with no LLM call; the password-reset chunk (ambiguous band) is escalated and, with no key, fails closed with an explicit message; the poisoned chunk also retrieved is hard-blocked.")
+story += figure(SHOTS / "04_benign_query.png", "Figure 4. Benign banking query. Support-article chunks pass with no LLM call; the password-reset chunk (ambiguous band) is escalated to the live judge, which returns a verdict with confidence; the poisoned chunk also retrieved is hard-blocked.")
 story += figure(SHOTS / "05_evaluation.png", "Figure 5. Tab 2, RAGShield Evaluation: lineage-grouped cross-validation with leakage status, per-fold TP/FP/TN/FN, per-category and per-template-group detection (indirect_novel visible), random-split summary, ablation, category-held-out with the lineage-clean column, threshold sensitivity and error analysis.")
 
 # ------------------------------------------------------------------ 9-12
@@ -292,10 +297,10 @@ P("<font face='Courier'>ragshield/</font> config.py · heuristics.py (Layer 1) �
 P("Quick start", H2),
 P("python -m venv .venv &amp;&amp; source .venv/bin/activate &nbsp;&nbsp;(Windows: .venv\\Scripts\\activate)<br/>pip install -r requirements.txt<br/>cp .env.example .env &nbsp;&nbsp;# add GROQ_API_KEY<br/>"
   "python scripts/train_classifier.py<br/>python scripts/run_evaluation.py<br/>python scripts/run_evaluation.py --group-held-out<br/>pytest &nbsp;&nbsp;&amp;&amp;&nbsp;&nbsp; pytest -m slow<br/>streamlit run app.py", CODE),
-P("10. What still needs the API key", H1),
-P("Live Groq behaviour was not exercised. The SDK was verified to accept the exact parameters used and a real connection failure was shown to produce a classified fail-closed verdict, "
-  "but judge accuracy on the escalated chunks is unconfirmed. After adding the key, run the two evaluation commands above (about 20 and 100 judge calls). Quote only runs whose output shows "
-  "<font face='Courier'>judge_failures: 0</font>; otherwise re-run after the rate limit recovers. Add the full-hybrid row to the README's group-held-out table from those outputs."),
+P("10. Live Groq verification", H1),
+P(f"Layer 3 was run live against Groq ({JM}). The lineage-grouped cross-validation made {JC_CV} judge calls and the random-split evaluation {JC_RS}, with {JF} judge failures in total; both runs are recorded in "
+  "<font face='Courier'>results/</font> with <font face='Courier'>llm_judge_used: true</font>. Only runs showing <font face='Courier'>judge_failures: 0</font> are quoted; a rate-limited run must be repeated after the quota recovers. "
+  "Judge accuracy is measured on a small benchmark (213 records), so confidence intervals are wide."),
 P("11. Resume defensibility", H1),
 P("<b>3-layer firewall</b>: intact and consistent across code, evaluation and documentation, with a routing table that can be explained in one sentence per row. "
   "<b>Adversarial benchmark</b>: direct, obfuscated (zero-width, base64, homoglyph), paraphrased, indirect (seed-derived and novel) and extraction attacks plus 88 hard benign negatives across nine styles; "
@@ -303,12 +308,12 @@ P("<b>3-layer firewall</b>: intact and consistent across code, evaluation and do
   "category-held-out (naive and lineage-clean) and lineage-grouped cross-validation, with leakage closed and judge failures accounted for. The honest headline is the lineage-grouped table; "
   "the honest caveat is that the classifier does not generalise to genuinely new payloads on its own, and the design relies on Layer 1 escalation and Layer 3 for those."),
 P("12. Next steps: adding the key, pushing to GitHub, deploying", H1),
-P("12.1 Add the key locally and confirm Layer 3 works", H2),
+P("12.1 Confirm Layer 3 works locally", H2),
 P("cp .env.example .env &nbsp;&nbsp;# then edit: GROQ_API_KEY=gsk_...<br/>streamlit run app.py", CODE),
-P("Load the sample documents and ask <i>How do I reset my online banking password?</i> The password-reset chunk that previously said 'Judge unavailable' must now show <i>Verdict: SAFE</i> with a confidence, "
+P("Load the sample documents and ask <i>How do I reset my online banking password?</i> The password-reset chunk must show <i>Verdict: SAFE</i> with a confidence (not 'Judge unavailable'), "
   "and the Final Answer section must contain a generated answer. Then ask <i>How do I reset the thermostat to factory settings?</i> and confirm the poisoned chunks are still blocked. "
   "'Judge call failed (rate_limited)' means quota, not a bug; wait and retry."),
-P("12.2 Run the LLM-backed evaluation and update the README", H2),
+P("12.2 Reproduce the LLM-backed evaluation", H2),
 P("python scripts/run_evaluation.py<br/>python scripts/run_evaluation.py --group-held-out", CODE),
 P("12.3 Pre-push checklist", H2),
 table([["Check", "Command", "Expected"],
@@ -347,12 +352,13 @@ P("Consequence: the previous category:template_group grouping let a payload sit 
 P("Changes: (1) <font face='Courier'>lineage_id</font> on every record (benign rows use benign:&lt;template_group&gt;); (2) group-held-out groups on lineage by default, with a per-fold assertion that no attack lineage "
   "appears on both sides, and <font face='Courier'>--group-by template_group</font> retained for comparison; (3) a lineage-clean variant of category-held-out; (4) ten novel indirect payloads with new intents "
   "(goal hijacking, output manipulation, exfiltration, language lock-in) that share no wording with any seed, each its own lineage. Nothing was removed; v2 is frozen as benchmark_v2_203.jsonl."),
-table([["Group-held-out (Layers 1+2)", "precision", "recall", "F1", "FPR", "TP / FP / TN / FN", "lineage leakage"],
-       ["lineage grouping, v3 (current headline)", f"{agg['precision']:.3f}", f"{agg['recall']:.3f}", f"{agg['f1']:.3f}", f"{agg['false_positive_rate']:.3f}", f"{agg['tp']} / {agg['fp']} / {agg['tn']} / {agg['fn']}", "none (asserted)"],
-       ["template_group grouping, v3", f"{tg['precision']:.3f}", f"{tg['recall']:.3f}", f"{tg['f1']:.3f}", f"{tg['false_positive_rate']:.3f}", f"{tg['tp']} / {tg['fp']} / {tg['tn']} / {tg['fn']}", "13 to 15 lineages per fold"],
-       ["template_group grouping, v2 (first report)", "0.962", "0.887", "0.923", "0.045", "102 / 4 / 84 / 13", "present"]],
+table([["Group-held-out", "precision", "recall", "F1", "FPR", "TP / FP / TN / FN", "lineage leakage"],
+       ["lineage grouping, v3, Layers 1+2 (no judge)", f"{NOJ['precision']:.3f}", f"{NOJ['recall']:.3f}", f"{NOJ['f1']:.3f}", f"{NOJ['false_positive_rate']:.3f}", f"{NOJ['tp']} / {NOJ['fp']} / {NOJ['tn']} / {NOJ['fn']}", "none (asserted)"],
+       ["lineage grouping, v3, full hybrid (live judge; current headline)", f"{agg['precision']:.3f}", f"{agg['recall']:.3f}", f"{agg['f1']:.3f}", f"{agg['false_positive_rate']:.3f}", f"{agg['tp']} / {agg['fp']} / {agg['tn']} / {agg['fn']}", "none (asserted)"],
+       ["template_group grouping, v3, Layers 1+2 (no judge)", f"{tg['precision']:.3f}", f"{tg['recall']:.3f}", f"{tg['f1']:.3f}", f"{tg['false_positive_rate']:.3f}", f"{tg['tp']} / {tg['fp']} / {tg['tn']} / {tg['fn']}", "13 to 15 lineages per fold"],
+       ["template_group grouping, v2, Layers 1+2 (first report)", "0.962", "0.887", "0.923", "0.045", "102 / 4 / 84 / 13", "present"]],
       widths=[W * 0.3, W * 0.09, W * 0.09, W * 0.09, W * 0.09, W * 0.16, W * 0.18]),
-P("Honest reading: the leakage-free recall is 0.848, not 0.887; the novel indirect payloads are detected by the classifier at 0.10; lineage-clean category-held-out ranges from 0.00 (obfuscated) "
+P("Honest reading: the leakage-free Layers 1+2 recall is 0.848, not 0.887; the novel indirect payloads are detected by the classifier at 0.10; lineage-clean category-held-out ranges from 0.00 (obfuscated) "
   "to 0.70 (direct_override). The classifier recognises payloads it has seen in another form far better than injection intent in general, which is why it is one layer of three.", CAP),
 P("13.2 Closing the gap the novel payloads exposed", H2),
 P("In leakage-free CV, 7 of the 10 novel payloads scored below LOW_THRESHOLD with no Layer 1 evidence: they passed silently and Layer 3 never saw them. Their shared marker is text that addresses "
@@ -367,7 +373,7 @@ P("Checked against console.groq.com/docs/reasoning and /docs/structured-outputs 
   "and requires the prompt to ask for JSON, which the system prompt does. The judge sends temperature 0, max_completion_tokens 600 (not the older max_tokens), response_format json_object, "
   "reasoning_effort low and include_reasoning false for gpt-oss; reasoning_format hidden for qwen/minimax/deepseek families (raw + JSON mode is a 400); nothing extra for non-reasoning models. "
   "include_reasoning and reasoning_format are never sent together. tests/test_llm_judge.py pins the exact kwargs, checks every kwarg against the installed SDK signature, and exercises the full "
-  "request/response path with a mocked client. Live calls were not made."),
+  "request/response path with a mocked client; the same configuration was then run live (section 10)."),
 P("13.4 Reproducibility", H2),
 P("requirements.txt pins the exact versions the committed classifier and results were produced with: Python 3.12.2 (.python-version), scikit-learn 1.9.1, sentence-transformers 5.7.0, transformers 5.17.0, "
   "torch 2.14.0, numpy 2.5.3, faiss-cpu 1.15.0, groq 0.37.1, streamlit 1.63.0, pandas 3.0.5, joblib 1.6.0, pypdf 6.18.0. The embedding model is pinned to Hugging Face revision "
@@ -388,14 +394,14 @@ table([["Item", "How verified", "Result"],
        ["Prompt boundary / context sanitisation", "system turn, tagged blocks, neutralised closing tags; blocked text absent from answer messages", "tests pass"],
        ["Streamlit behaviour", "driven headlessly: load samples, poisoned query, benign query, evaluation tab; auto-train when model missing", "no errors"],
        ["Provenance / benchmark hash", "model sidecar and results carry SHA-256; app warns on mismatch", "all match current benchmark"],
-       ["Groq request + JSON parsing", "kwargs pinned and checked against SDK signature; parser tests", "pass; live call not possible"],
+       ["Groq request + JSON parsing", "kwargs pinned and checked against SDK signature; parser tests", "pass; live run completed with 0 judge failures"],
        ["Dependency compatibility", "exact pins; embedding revision pin; environment recorded and checked on load", "pinned; model retrained under the pinned stack"]],
       widths=[W * 0.24, W * 0.44, W * 0.32]),
-P("13.6 Verdict: GO, with two stated conditions", H2),
+P("13.6 Verdict: GO, with one stated limitation", H2),
 P("<b>GO</b> for publishing the repository and deploying the app. The architecture survived the audit: the problems found were in the benchmark's construction and the evaluation's split, not in "
-  "the three-layer design, and they are now measured honestly. Two conditions remain and are not hidden: (1) Layer 3 has still not been exercised live; add the key, run the two evaluation commands, "
-  "and quote only runs with judge_failures = 0. (2) The classifier's generalisation to genuinely new payloads is weak (1 of 10 novel indirect payloads; lineage-clean 0.00 to 0.70); the design covers "
-  "this with Layer 1 escalation and Layer 3 review, and the README says so in plain terms. Do not describe the classifier as detecting unseen attacks on its own."),
+  "the three-layer design, and they are now measured honestly. Layer 3 has been exercised live (section 10). The remaining limitation is not hidden: the classifier's generalisation to genuinely new "
+  "payloads is weak (1 of 10 novel indirect payloads; lineage-clean 0.00 to 0.70). The design covers this with Layer 1 escalation and Layer 3 review, and the README says so in plain terms. "
+  "Do not describe the classifier as detecting unseen attacks on its own."),
 ]
 
 
@@ -408,7 +414,7 @@ def footer(canvas, doc):
 
 
 doc = SimpleDocTemplate(str(OUT), pagesize=letter, leftMargin=0.6 * inch, rightMargin=0.6 * inch, topMargin=0.6 * inch, bottomMargin=0.6 * inch,
-                        title="RAGShield – debugging, audit and finalisation report", author="Claude (with Sparsh Sharma)")
+                        title="RAGShield – debugging, audit and finalisation report", author="Akshita Sharma")
 doc.build(story, onFirstPage=footer, onLaterPages=footer)
 import shutil  # noqa: E402
 
