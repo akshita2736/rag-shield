@@ -1,59 +1,125 @@
-# RAGShield — a 3-layer prompt-injection firewall for RAG pipelines
+# RAG-Shield: a 3-layer prompt-injection firewall for RAG pipelines
 
-RAGShield sits between document retrieval and the answer-generating LLM, screening every retrieved chunk before it enters the model's context.
+[![Live demo](https://img.shields.io/badge/Live%20demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://rag-shield.streamlit.app/)
 
+RAG-Shield sits between document retrieval and the answer-generating LLM and screens every retrieved chunk before it reaches the model's context. Poisoned chunks are blocked, ambiguous ones get an LLM review, and only approved text is used to answer.
+
+
+## Architecture
+
+```text
+Documents
+   ↓
+Chunking → MiniLM Embeddings → FAISS Retrieval
+   ↓
+RAGShield Firewall
+   ├── Layer 1: Deterministic Heuristics
+   ├── Layer 2: Embedding-Based Classifier
+   └── Layer 3: Contextual LLM Judge (Groq)
+   ↓
+Sanitised Context
+   ↓
+Answer-Generating LLM
 ```
-Documents → Chunking → MiniLM Embeddings → FAISS Retrieval
-        → RAGShield Firewall
-             Layer 1  Deterministic heuristics    (regex + obfuscation checks)
-             Layer 2  Embedding classifier        (MiniLM → logistic regression, max-sentence scoring)
-             Layer 3  Contextual LLM judge         (Groq, JSON verdict, fails closed)
-        → Sanitised context → Answer-generating LLM
-```
 
-Instructional language alone isn't an injection — documents legitimately tell *humans* what to do. An injection tries to steer the downstream AI instead: override its rules, assign it a role, extract its system prompt, or redirect its output. RAGShield is built and evaluated around that distinction, and the same routing function (`firewall.screen_chunks`) runs in both the app and every evaluation condition, so production and evaluation can't silently diverge.
+RAG-Shield focuses on an important distinction: instructional language is not automatically prompt injection. Real documents contain instructions intended for humans, while prompt injection attempts to manipulate the downstream AI.
+
+## How It Works
+
+- **Layer 1 — Heuristics:** Detects deterministic injection patterns, prompt extraction, role manipulation and obfuscation.
+- **Layer 2 — ML Classifier:** Uses MiniLM embeddings + Logistic Regression for semantic risk scoring.
+- **Layer 3 — LLM Judge:** Uses Groq to review ambiguous cases; failures are handled fail-closed.
+
 
 ## Routing
 
 | Layer 1 | Layer 2 score | Decision | LLM call |
-|---|---|---|---|
-| critical match | — | **BLOCKED** | no |
+|---|---:|---|---|
+| critical match | not scored | **BLOCKED** | no |
 | no match | `< 0.30` | **SAFE** | no |
 | any match | `≥ 0.70` | **BLOCKED** | no |
-| anything else | anything else | **Layer 3 judge decides** | yes |
+| anything else | anything else | **Layer 3 judge decides** (judge failure → **BLOCKED**) | yes |
+
+A high ML score alone never blocks; Layer 1 evidence can trigger blocking or escalation depending on the rule.
+
+---
+
+### 5-Fold Lineage Group-Held-Out Evaluation:
+
+- **213 records (125 attacks, 88 hard benign negatives):** direct override, role manipulation, prompt extraction, indirect, obfuscated and paraphrased attacks.
+- Attack variants are grouped by **21 seed lineages** for 5-fold cross-validation, preventing related payloads from leaking across train and test folds.
+- Each fold trains its own classifier and ensures that no attack lineage appears on both sides.
+
 
 ## Results
 
-5-fold cross-validation, grouped by attack **lineage** (21 seed payloads; grouping by category alone lets variants leak across folds):
 
-| Configuration | Precision | Recall | F1 | FPR |
-|---|---|---|---|---|
-| Layers 1+2 only | 0.955 | 0.848 | 0.898 | 0.057 |
-| **Full hybrid, live judge** | **0.992** | **0.976** | **0.984** | **0.011** |
+| Configuration (lineage-grouped CV) | Precision | Recall | F1 | FPR |
+|---|---:|---:|---:|---:|
+| Layers 1+2 only (0.5 cutoff, no judge) | 0.955 | 0.848 | 0.898 | 0.057 |
+| **Full hybrid, live Groq judge** | **0.992** | **0.976** | **0.984** | **0.011** |
 
-Full hybrid on the random 80/20 split: precision, recall, and F1 all 1.000 on 43 held-out records (0 FP, 0 FN, 20 judge calls, 0 failures).
 
-**Honest limitation:** `indirect_novel` — ten payloads sharing no wording with any training seed — is the true test of unseen-intent generalisation. The embedding classifier alone catches only 1/10. A Layer 1 rule for AI-directed language escalates these to the judge instead of passing them silently, recovering 9/10 in the full hybrid.
+- The full hybrid achieved **98.4% F1 and 1.1% FPR**, with **122 TP, 1 FP, 87 TN and 3 FN** across 5 folds.
+- The evaluation used **118 live LLM judge calls with 0 failures**.
+- The random 80/20 split achieved **1.000 F1**, but is treated as an optimistic secondary result rather than the main headline.
 
-Full ablations, category-held-out breakdowns, real-document robustness tests, and reproducibility pins are in `docs/RAGShield_Report.pdf`.
 
-## Quick start
+<details>
+<summary>Screenshots</summary>
+
+| Poisoned FAQ blocked | Benign banking question answered |
+|---|---|
+| ![poisoned](docs/screenshots/03_poisoned_query.png) | ![benign](docs/screenshots/04_benign_query.png) |
+
+Evaluation tab: [`docs/screenshots/05_evaluation.png`](docs/screenshots/05_evaluation.png)
+</details>
+
+---
+
+### Quick start
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env                              # add GROQ_API_KEY
+cp .env.example .env                                   # add GROQ_API_KEY
 python scripts/train_classifier.py
-python scripts/run_evaluation.py --group-held-out  # headline cross-validation
+python scripts/run_evaluation.py --group-held-out      # headline cross-validation
 streamlit run app.py
-pytest                                             # 87 unit tests
+pytest                                                 # 87 unit tests (pytest -m slow for 2 real-document tests)
 ```
 
-Without a `GROQ_API_KEY`, evaluation falls back to a 0.5 cutoff instead of the judge, and the app quarantines anything needing review.
+**Deploy (Streamlit Community Cloud):** main file `app.py`, Python 3.12, and `GROQ_API_KEY = "gsk_..."` under *Secrets*. 
 
-## Known limitations
+## Repository structure
+        
+        ragshield/
+        ├── heuristics.py
+        ├── ml_classifier.py
+        ├── llm_judge.py
+        ├── firewall.py
+        ├── rag_pipeline.py
+        └── generate_answer.py
+        
+        scripts/
+        ├── build_benchmark.py
+        ├── train_classifier.py
+        ├── run_evaluation.py
+        └── segmentation_experiment.py
+        
+        data/          # Benchmark + sample documents
+        results/       # Evaluation results
+        tests/         # Pytest suite
+        app.py         # Streamlit application
+        docs/          # Technical report + screenshots
 
-* 213 records from 21 seed lineages plus 10 novel payloads — small per-fold counts, wide confidence intervals.
-* ~40% of real-document chunks land in the review band and need an LLM call; recall on paraphrased and disguised attacks depends on the judge.
-* Fixed 500-character chunking can split an attack across a boundary.
-* Reduces attack surface — doesn't guarantee the answer model can't be manipulated; the prompt boundary (tagged untrusted context) is the last line of defence.
+
+## Known Limitations
+
+- **Novel-intent generalisation:** The classifier alone detects only 1/10 `indirect_novel` payloads; the full hybrid reaches 9/10 through Layer 1 escalation + LLM review.
+- **Small benchmark size:** 213 records across 21 seed lineages plus 10 novel payloads, so results are not representative of all real-world attacks.
+- **Pipeline limitations:** Fixed-size chunking can split attacks across boundaries, and some real-document chunks require LLM review.
+- RAGShield reduces the attack surface but does not provide a formal guarantee against downstream LLM manipulation.
+
+## Tech Stack
+Python · FAISS · SentenceTransformers · Scikit-learn · Groq · Streamlit · Pytest
